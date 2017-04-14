@@ -488,7 +488,7 @@ BCC_COMPAT := $(HOST_OUT_EXECUTABLES)/bcc_compat
 #DX := $(HOST_OUT_EXECUTABLES)/dx
 #MAINDEXCLASSES := $(HOST_OUT_EXECUTABLES)/mainDexClasses
 DX := prebuilts/sdk/tools/dx
-MAINDEXCLASSES := prebuilts/sdk/tools/mainDexClasses
+MAINDEXCLASSES := $(HOST_OUT_EXECUTABLES)/mainDexClasses
 
 USE_PREBUILT_SDK_TOOLS_IN_PLACE := true
 
