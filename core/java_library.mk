@@ -27,7 +27,7 @@ LOCAL_BUILT_MODULE_STEM := javalib.jar
 intermediates.COMMON := $(call local-intermediates-dir,COMMON)
 
 # This file will be the one that other modules should depend on.
-common_javalib.jar := $(intermediates.COMMON)/$(LOCAL_BUILT_MODULE_STEM)
+common_javalib.jar := $(intermediates.COMMON)/javalib.jar
 LOCAL_INTERMEDIATE_TARGETS += $(common_javalib.jar)
 
 ifeq ($(LOCAL_PROGUARD_ENABLED),disabled)
@@ -37,12 +37,7 @@ endif
 ifeq (true,$(EMMA_INSTRUMENT))
 ifeq (true,$(LOCAL_EMMA_INSTRUMENT))
 ifeq (true,$(EMMA_INSTRUMENT_STATIC))
-ifdef LOCAL_JACK_ENABLED
-# Jack supports coverage with Jacoco
-LOCAL_STATIC_JAVA_LIBRARIES += jacocoagent
-else
 LOCAL_STATIC_JAVA_LIBRARIES += emma
-endif # LOCAL_JACK_ENABLED
 endif # LOCAL_EMMA_INSTRUMENT
 endif # EMMA_INSTRUMENT_STATIC
 else
@@ -64,7 +59,7 @@ endif
 	@echo "target Static Jar: $(PRIVATE_MODULE) ($@)"
 	$(copy-file-to-target)
 
-$(LOCAL_BUILT_MODULE): $(common_javalib.jar)
+$(LOCAL_BUILT_MODULE) : $(common_javalib.jar)
 	$(copy-file-to-target)
 
 else # !LOCAL_IS_STATIC_JAVA_LIBRARY
@@ -76,6 +71,7 @@ $(common_javalib.jar) : $(built_dex) $(java_resource_sources) | $(ZIPTIME)
 	@echo "target Jar: $(PRIVATE_MODULE) ($@)"
 	$(call initialize-package-file,$(PRIVATE_SOURCE_ARCHIVE),$@)
 	$(add-dex-to-package)
+	$(remove-timestamps-from-package)
 
 ifdef LOCAL_DEX_PREOPT
 ifneq ($(dexpreopt_boot_jar_module),) # boot jar

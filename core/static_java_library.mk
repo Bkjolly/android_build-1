@@ -23,10 +23,6 @@ LOCAL_UNINSTALLABLE_MODULE := true
 LOCAL_IS_STATIC_JAVA_LIBRARY := true
 LOCAL_MODULE_CLASS := JAVA_LIBRARIES
 
-#################################
-include $(BUILD_SYSTEM)/configure_local_jack.mk
-#################################
-
 intermediates.COMMON := $(call local-intermediates-dir,COMMON)
 
 my_res_package :=
@@ -71,8 +67,21 @@ proguard_options_file :=
 ifneq ($(LOCAL_PROGUARD_ENABLED),custom)
   proguard_options_file := $(intermediates.COMMON)/proguard_options
 endif
+
 LOCAL_PROGUARD_FLAGS := $(addprefix -include ,$(proguard_options_file)) $(LOCAL_PROGUARD_FLAGS)
 
+R_file_stamp := $(intermediates.COMMON)/src/R.stamp
+LOCAL_INTERMEDIATE_TARGETS += $(R_file_stamp)
+
+ifdef LOCAL_USE_AAPT2
+# For library we treat all the resource equal with no overlay.
+my_res_resources := $(all_resources)
+my_overlay_resources :=
+# For libraries put everything in the COMMON intermediate directory.
+my_res_package := $(intermediates.COMMON)/package-res.apk
+
+LOCAL_INTERMEDIATE_TARGETS += $(my_res_package)
+endif  # LOCAL_USE_AAPT2
 endif  # LOCAL_RESOURCE_DIR
 
 all_res_assets := $(all_resources)
@@ -146,10 +155,7 @@ $(R_file_stamp) : $(all_resources) $(full_android_manifest) $(AAPT) $(framework_
 endif  # LOCAL_USE_AAPT2
 
 $(LOCAL_BUILT_MODULE): $(R_file_stamp)
-
-ifneq ($(full_classes_jar),)
 $(full_classes_compiled_jar): $(R_file_stamp)
-endif
 
 # Rule to build AAR, archive including classes.jar, resource, etc.
 built_aar := $(intermediates.COMMON)/javalib.aar

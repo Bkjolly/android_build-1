@@ -485,8 +485,10 @@ SIGNAPK_JNI_LIBRARY_PATH := $(HOST_OUT_SHARED_LIBRARIES)
 LLVM_RS_CC := $(HOST_OUT_EXECUTABLES)/llvm-rs-cc
 BCC_COMPAT := $(HOST_OUT_EXECUTABLES)/bcc_compat
 
-DX := $(HOST_OUT_EXECUTABLES)/dx
-MAINDEXCLASSES := $(HOST_OUT_EXECUTABLES)/mainDexClasses
+#DX := $(HOST_OUT_EXECUTABLES)/dx
+#MAINDEXCLASSES := $(HOST_OUT_EXECUTABLES)/mainDexClasses
+DX := prebuilts/sdk/tools/dx
+MAINDEXCLASSES := prebuilts/sdk/tools/mainDexClasses
 
 USE_PREBUILT_SDK_TOOLS_IN_PLACE := true
 
@@ -514,17 +516,13 @@ BCC_COMPAT := $(prebuilt_sdk_tools_bin)/bcc_compat
 endif # TARGET_BUILD_PDK
 endif # TARGET_BUILD_APPS || TARGET_BUILD_PDK
 
-ifeq ($(USE_HOST_LEX),yes)
 LEX := flex
-else
-LEX := prebuilts/misc/$(BUILD_OS)-$(HOST_PREBUILT_ARCH)/flex/flex-2.5.39
-endif
 # The default PKGDATADIR built in the prebuilt bison is a relative path
 # external/bison/data.
 # To run bison from elsewhere you need to set up enviromental variable
 # BISON_PKGDATADIR.
 BISON_PKGDATADIR := $(PWD)/external/bison/data
-BISON := prebuilts/misc/$(BUILD_OS)-$(HOST_PREBUILT_ARCH)/bison/bison
+BISON := bison
 YACC := $(BISON) -d
 
 YASM := prebuilts/misc/$(BUILD_OS)-$(HOST_PREBUILT_ARCH)/yasm/yasm

@@ -113,5 +113,5 @@ $(LOCAL_BUILT_MODULE): $(built_dex) $(java_resource_sources)
 	$(call initialize-package-file,$(PRIVATE_SOURCE_ARCHIVE),$@)
 	$(add-dex-to-package)
 
-
+USE_CORE_LIB_BOOTCLASSPATH :=
 endif
