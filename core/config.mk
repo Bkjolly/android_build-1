@@ -155,16 +155,7 @@ COMMON_PACKAGE_SUFFIX := .zip
 COMMON_JAVA_PACKAGE_SUFFIX := .jar
 COMMON_ANDROID_PACKAGE_SUFFIX := .apk
 
-#<<<<<<< HEAD
-ifdef TMPDIR
-JAVA_TMPDIR_ARG := -Djava.io.tmpdir=$(TMPDIR)
-else
-JAVA_TMPDIR_ARG :=
-endif
-#=======
-# list of flags to turn specific warnings in to errors
 TARGET_ERROR_FLAGS := -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point
-#>>>>>>> parent of f09e59e... [DO NOT MERGE] Compile using Jack.
 
 # ###############################################################
 # Include sub-configuration files
@@ -523,14 +514,6 @@ BCC_COMPAT := $(prebuilt_sdk_tools_bin)/bcc_compat
 endif # TARGET_BUILD_PDK
 endif # TARGET_BUILD_APPS || TARGET_BUILD_PDK
 
-
-# ---------------------------------------------------------------
-# Generic tools.
-#<<<<<<< HEAD
-JACK := $(HOST_OUT_EXECUTABLES)/jack
-#=======
-#>>>>>>> parent of f09e59e... [DO NOT MERGE] Compile using Jack.
-
 ifeq ($(USE_HOST_LEX),yes)
 LEX := flex
 else
@@ -586,16 +569,6 @@ DATA_BINDING_COMPILER := $(HOST_OUT_JAVA_LIBRARIES)/databinding-compiler.jar
 
 DEFAULT_JACK_ENABLED:=
 
-ifneq ($(ANDROID_JACK_EXTRA_ARGS),)
-DEFAULT_JACK_EXTRA_ARGS := $(ANDROID_JACK_EXTRA_ARGS)
-else
-DEFAULT_JACK_EXTRA_ARGS := @$(BUILD_SYSTEM)/jack-default.args
-endif
-# Turn off jack warnings by default.
-DEFAULT_JACK_EXTRA_ARGS += --verbose error
-
-#=======
-#>>>>>>> parent of f09e59e... [DO NOT MERGE] Compile using Jack.
 PROGUARD := external/proguard/bin/proguard.sh
 JAVATAGS := build/tools/java-event-log-tags.py
 RMTYPEDEFS := $(HOST_OUT_EXECUTABLES)/rmtypedefs

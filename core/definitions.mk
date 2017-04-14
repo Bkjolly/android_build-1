@@ -490,6 +490,14 @@ $(1): $(2)
 endef
 
 ###########################################################
+## Reverse order of a list
+###########################################################
+
+define reverse-list
+$(if $(1),$(call reverse-list,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
+endef
+ 
+###########################################################
 ## The intermediates directory.  Where object files go for
 ## a given target.  We could technically get away without
 ## the "_intermediates" suffix on the directory, but it's

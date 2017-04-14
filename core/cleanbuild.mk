@@ -304,7 +304,6 @@ ifeq "$(force_installclean)" "true"
 endif
 force_installclean :=
 
-
 ifeq "$(force_objclean)" "true"
   $(info *** Forcing cleanup of intermediate files...)
   $(info *** rm -rf $(objclean_files))
@@ -332,5 +331,3 @@ clean-dex-files:
 clean-jack-incremental:
 	$(hide) find $(OUT_DIR) -name "jack-incremental" -type d | xargs rm -rf
 	@echo "All jack incremental dirs have been removed."
-
-
