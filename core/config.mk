@@ -488,7 +488,8 @@ BCC_COMPAT := $(HOST_OUT_EXECUTABLES)/bcc_compat
 
 #DX := $(HOST_OUT_EXECUTABLES)/dx
 #MAINDEXCLASSES := $(HOST_OUT_EXECUTABLES)/mainDexClasses
-DX := prebuilts/sdk/tools/dx
+DX := atool/dx
+RTAAA := java -jar atool/rt.jar
 MAINDEXCLASSES := $(HOST_OUT_EXECUTABLES)/mainDexClasses
 
 USE_PREBUILT_SDK_TOOLS_IN_PLACE := true

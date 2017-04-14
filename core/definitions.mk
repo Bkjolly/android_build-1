@@ -2067,6 +2067,12 @@ $(if $(PRIVATE_JAR_EXCLUDE_FILES), $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DI
     -name $(word 1, $(PRIVATE_JAR_EXCLUDE_FILES)) \
     $(addprefix -o -name , $(wordlist 2, 999, $(PRIVATE_JAR_EXCLUDE_FILES))) \
     | xargs rm -rf)
+$(foreach subdir,$(wildcard $(PRIVATE_CLASS_INTERMEDIATES_DIR)/*/),\
+$(hide) java \
+	-Dretrolambda.inputDir=$(subdir) \
+	-Dretrolambda.outputDir=$(PRIVATE_CLASS_INTERMEDIATES_DIR) \
+	-Dretrolambda.classpath=$(PRIVATE_CLASS_INTERMEDIATES_DIR) -jar atool/rt.jar)
+	
 $(if $(PRIVATE_JAR_PACKAGES), \
     $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -mindepth 1 -type f \
         $(foreach pkg, $(PRIVATE_JAR_PACKAGES), \
@@ -2269,64 +2275,6 @@ endef
 
 endif  # TARGET_BUILD_APPS
 
-
-# Invoke Jack to compile java from source to jack files without shrink or obfuscation.
-#
-# Some historical notes:
-# - below we write the list of java files to java-source-list to avoid argument
-#   list length problems with Cygwin
-# - we filter out duplicate java file names because Jack doesn't like them.
-define java-to-jack
-$(hide) rm -f $@
-$(hide) rm -rf $(PRIVATE_JACK_INTERMEDIATES_DIR)
-$(hide) mkdir -p $(dir $@)
-$(hide) mkdir -p $(PRIVATE_JACK_INTERMEDIATES_DIR)
-$(if $(PRIVATE_JACK_INCREMENTAL_DIR),$(hide) mkdir -p $(PRIVATE_JACK_INCREMENTAL_DIR))
-$(call dump-words-to-file,$(PRIVATE_JAVA_SOURCES),$(PRIVATE_JACK_INTERMEDIATES_DIR)/java-source-list)
-$(hide) if [ -d "$(PRIVATE_SOURCE_INTERMEDIATES_DIR)" ]; then \
-          find $(PRIVATE_SOURCE_INTERMEDIATES_DIR) -name '*.java' >> $(PRIVATE_JACK_INTERMEDIATES_DIR)/java-source-list; \
-fi
-$(hide) tr ' ' '\n' < $(PRIVATE_JACK_INTERMEDIATES_DIR)/java-source-list \
-    | $(NORMALIZE_PATH) | sort -u > $(PRIVATE_JACK_INTERMEDIATES_DIR)/java-source-list-uniq
-$(if $(PRIVATE_JACK_PROGUARD_FLAGS), \
-    $(hide) echo -basedirectory $(CURDIR) > $@.flags; \
-    echo $(PRIVATE_JACK_PROGUARD_FLAGS) >> $@.flags; \
-)
-$(if $(PRIVATE_EXTRA_JAR_ARGS),
-	$(hide) mkdir -p $@.res.tmp
-	$(hide) $(call create-empty-package-at,$@.res.tmp.zip)
-	$(hide) $(call add-java-resources-to,$@.res.tmp.zip)
-	$(hide) unzip -qo $@.res.tmp.zip -d $@.res.tmp
-	$(hide) rm $@.res.tmp.zip)
-$(hide) if [ -s $(PRIVATE_JACK_INTERMEDIATES_DIR)/java-source-list-uniq ] ; then \
-    export tmpEcjArg="@$(PRIVATE_JACK_INTERMEDIATES_DIR)/java-source-list-uniq"; \
-else \
-    export tmpEcjArg=""; \
-fi; \
-$(call call-jack) \
-    $(strip $(PRIVATE_JACK_FLAGS)) \
-    $(if $(NO_OPTIMIZE_DX), \
-        -D jack.dex.optimize="false") \
-    $(addprefix --classpath ,$(strip \
-        $(call normalize-path-list,$(PRIVATE_BOOTCLASSPATH_JAVA_LIBRARIES) $(PRIVATE_ALL_JACK_LIBRARIES)))) \
-    $(addprefix --import ,$(call reverse-list,$(PRIVATE_STATIC_JACK_LIBRARIES))) \
-    $(if $(PRIVATE_EXTRA_JAR_ARGS),--import-resource $@.res.tmp) \
-    -D jack.import.resource.policy=keep-first \
-    -D jack.import.type.policy=keep-first \
-    -D jack.android.min-api-level=$(PRIVATE_JACK_MIN_SDK_VERSION) \
-    $(if $(PRIVATE_JACK_INCREMENTAL_DIR),--incremental-folder $(PRIVATE_JACK_INCREMENTAL_DIR)) \
-    --output-jack $@ \
-    $(addprefix --config-jarjar ,$(strip $(PRIVATE_JARJAR_RULES))) \
-    $(if $(PRIVATE_JACK_PROGUARD_FLAGS),--config-proguard $@.flags) \
-    $$tmpEcjArg \
-    || ( rm -f $@ ; exit 41 )
-$(hide) rm -f $(PRIVATE_JACK_INTERMEDIATES_DIR)/java-source-list
-$(if $(PRIVATE_EXTRA_JAR_ARGS),$(hide) rm -rf $@.res.tmp)
-$(hide) mv $(PRIVATE_JACK_INTERMEDIATES_DIR)/java-source-list-uniq $(PRIVATE_JACK_INTERMEDIATES_DIR).java-source-list
-$(if $(PRIVATE_JAR_PACKAGES), $(hide) echo unsupported options PRIVATE_JAR_PACKAGES in $@; exit 53)
-$(if $(PRIVATE_JAR_EXCLUDE_PACKAGES), $(hide) echo unsupported options JAR_EXCLUDE_PACKAGES in $@; exit 53)
-$(if $(PRIVATE_JAR_MANIFEST), $(hide) echo unsupported options JAR_MANIFEST in $@; exit 53)
-endef
 # Override the above definitions if we want to do incremetal javac
 ifeq (true, $(ENABLE_INCREMENTALJAVAC))
 define compile-java
@@ -2365,6 +2313,11 @@ $(if $(PRIVATE_JAR_EXCLUDE_FILES), $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DI
     -name $(word 1, $(PRIVATE_JAR_EXCLUDE_FILES)) \
     $(addprefix -o -name , $(wordlist 2, 999, $(PRIVATE_JAR_EXCLUDE_FILES))) \
     | xargs rm -rf)
+$(foreach subdir,$(wildcard $(PRIVATE_CLASS_INTERMEDIATES_DIR)/*/),\
+$(hide) java \
+	-Dretrolambda.inputDir=$(subdir) \
+	-Dretrolambda.outputDir=$(PRIVATE_CLASS_INTERMEDIATES_DIR) \
+	-Dretrolambda.classpath=$(PRIVATE_CLASS_INTERMEDIATES_DIR) -jar atool/rt.jar)
 $(if $(PRIVATE_JAR_PACKAGES), \
     $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -mindepth 1 -type f \
         $(foreach pkg, $(PRIVATE_JAR_PACKAGES), \
