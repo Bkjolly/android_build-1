@@ -517,7 +517,7 @@ legacy_proguard_flags := $(addprefix -libraryjars ,$(my_support_library_sdk_rais
 
 legacy_proguard_flags += -printmapping $(proguard_dictionary)
 
-common_proguard_flags := -forceprocessing
+common_proguard_flags := -dontwarn -forceprocessing
 
 ifeq ($(filter nosystem,$(LOCAL_PROGUARD_ENABLED)),)
 common_proguard_flags += -include $(BUILD_SYSTEM)/proguard.flags
