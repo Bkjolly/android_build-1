@@ -2067,12 +2067,6 @@ $(if $(PRIVATE_JAR_EXCLUDE_FILES), $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DI
     -name $(word 1, $(PRIVATE_JAR_EXCLUDE_FILES)) \
     $(addprefix -o -name , $(wordlist 2, 999, $(PRIVATE_JAR_EXCLUDE_FILES))) \
     | xargs rm -rf)
-$(foreach subdir,$(wildcard $(PRIVATE_CLASS_INTERMEDIATES_DIR)/*/),\
-$(hide) java \
-	-Dretrolambda.inputDir=$(subdir) \
-	-Dretrolambda.outputDir=$(PRIVATE_CLASS_INTERMEDIATES_DIR) \
-	-Dretrolambda.classpath=$(PRIVATE_CLASS_INTERMEDIATES_DIR) -jar atool/rt.jar)
-	
 $(if $(PRIVATE_JAR_PACKAGES), \
     $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -mindepth 1 -type f \
         $(foreach pkg, $(PRIVATE_JAR_PACKAGES), \
@@ -2313,11 +2307,6 @@ $(if $(PRIVATE_JAR_EXCLUDE_FILES), $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DI
     -name $(word 1, $(PRIVATE_JAR_EXCLUDE_FILES)) \
     $(addprefix -o -name , $(wordlist 2, 999, $(PRIVATE_JAR_EXCLUDE_FILES))) \
     | xargs rm -rf)
-$(foreach subdir,$(wildcard $(PRIVATE_CLASS_INTERMEDIATES_DIR)/*/),\
-$(hide) java \
-	-Dretrolambda.inputDir=$(subdir) \
-	-Dretrolambda.outputDir=$(PRIVATE_CLASS_INTERMEDIATES_DIR) \
-	-Dretrolambda.classpath=$(PRIVATE_CLASS_INTERMEDIATES_DIR) -jar atool/rt.jar)
 $(if $(PRIVATE_JAR_PACKAGES), \
     $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) -mindepth 1 -type f \
         $(foreach pkg, $(PRIVATE_JAR_PACKAGES), \
@@ -2343,13 +2332,45 @@ $(call compile-java,$(TARGET_JAVAC),$(PRIVATE_BOOTCLASSPATH))
 endef
 endif # ENABLE_INCREMENTALJAVAC
 
+define desugar-classpath
+$(filter-out -classpath -bootclasspath "",$(subst :,$(space),$(1)))
+endef
+
+define desugar-classpath
+$(filter-out -classpath -bootclasspath "",$(subst :,$(space),$(1)))
+endef
+
+# Takes an sdk version that might be PLATFORM_VERSION_CODENAME (for example P),
+# returns a number greater than the highest existing sdk version if it is, or
+# the input if it is not.
+define codename-or-sdk-to-sdk
+$(if $(filter $(1),$(PLATFORM_VERSION_CODENAME)),10000,$(1))
+endef
+
+define desugar-classes-jar
+@echo Desugar: $@
+@mkdir -p $(dir $@)
+$(hide) rm -f $@ $@.tmp
+$(hide) java -jar $(DESUGAR) \
+    $(addprefix --bootclasspath_entry ,$(call desugar-bootclasspath,$(PRIVATE_BOOTCLASSPATH))) \
+    $(addprefix --classpath_entry ,$(PRIVATE_ALL_JAVA_LIBRARIES)) \
+    --min_sdk_version $(call codename-or-sdk-to-sdk,$(PRIVATE_DEFAULT_APP_TARGET_SDK)) \
+    --allow_empty_bootclasspath \
+    $(if $(filter --core-library,$(PRIVATE_DX_FLAGS)),--core_library) \
+    -i $< -o $@.tmp
+    mv $@.tmp $@
+endef
+
+#TODO: use a smaller -Xmx value for most libraries;
+#      only core.jar and framework.jar need a heap this big.
 define transform-classes.jar-to-dex
 @echo "target Dex: $(PRIVATE_MODULE)"
 @mkdir -p $(dir $@)
 $(hide) rm -f $(dir $@)classes*.dex
 $(hide) $(DX) \
-    $(if $(findstring windows,$(HOST_OS)),,-JXms16M -JXmx2048M) \
+    -JXms16M -JXmx2048M \
     --dex --output=$(dir $@) \
+    --min-sdk-version=$(call codename-or-sdk-to-sdk,$(PRIVATE_DEFAULT_APP_TARGET_SDK)) \
     $(if $(NO_OPTIMIZE_DX), \
         --no-optimize) \
     $(if $(GENERATE_DEX_DEBUG), \
