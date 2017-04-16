@@ -428,9 +428,17 @@ $(full_classes_compiled_jar): \
         $(LOCAL_ADDITIONAL_DEPENDENCIES)
 		$(transform-java-to-classes.jar)
 
+my_desugaring :=
+ifndef LOCAL_IS_STATIC_JAVA_LIBRARY
+my_desugaring := true
 $(full_classes_desugar_jar): PRIVATE_DX_FLAGS := $(LOCAL_DX_FLAGS)
 $(full_classes_desugar_jar): $(full_classes_compiled_jar) $(DESUGAR)
 	$(desugar-classes-jar)
+endif
+
+ifndef my_desugaring
+full_classes_desugar_jar := $(full_classes_compiled_jar)
+endif
 
 # Run jarjar if necessary, otherwise just copy the file.
 ifneq ($(strip $(LOCAL_JARJAR_RULES)),)
